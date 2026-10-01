@@ -23,6 +23,17 @@ Settings are saved locally and restored after quitting or rebuilding with the sa
 - **Alerts:** CPU threshold (40–110 °C), required sustained duration (immediate/5/15/30/60 seconds), minimum cooldown (1/5/10/30 minutes). Default is 15 seconds above 90 °C, five-minute cooldown, notifications disabled. Before another alert, CPU must cool to at least 3 °C below threshold. A missing reading, long sampling gap, sleep or a sampling-rate change resets the pending duration. Alerts are evaluated only when a sample arrives; they cannot detect excursions between samples.
 - **Launch at login:** available at the bottom of Settings, using native SMAppService.
 
+## Process Watch
+
+Finds what is actually heating the Mac and cleans up after forgotten dev servers.
+
+- Every 15 seconds (30 on battery) the app reads the process table through libproc (no shell commands) and computes CPU per process.
+- Dev servers (Next.js, Vite, Expo, Astro, Nuxt, Remix, Storybook, Webpack, Wrangler, Django, Flask, Uvicorn, Rails, file/test watchers) are grouped with their launchers (`npm` → `sh -c` → `node` → `next-server`) and named by project, worktree and port: **IMSA Website · Next.js server (test)** · `help-desk worktree · :3019 · up 6d 15h`.
+- A dev server is flagged when its launcher is gone (terminal or agent exited, so it was reparented to launchd) for 15 minutes, when it has run longer than 24 hours, or when it uses ≥ 80 % CPU for 10 minutes. With auto-stop on (default), flagged dev servers are stopped as a whole tree (SIGTERM, then SIGKILL after 3 s, with a pid-reuse check) and you get a notification.
+- Any other process that runs away is reported with a notification and a Stop button, never stopped automatically.
+- ✦ explains a process with OpenAI (default `gpt-5-mini`), on demand or when a runaway alert fires. Key order: Settings (Keychain) → `OPENAI_API_KEY` → `~/.codex/secrets/openai.env`. Keys and tokens in command lines are redacted before sending.
+- `swift run SensorProbe processes` prints what Process Watch sees without signalling anything.
+
 ## Monitoring and efficiency
 
 - Real CPU/SoC, GPU, battery, SSD/NAND and fan readings, with unavailable channels hidden.
@@ -32,7 +43,7 @@ Settings are saved locally and restored after quitting or rebuilding with the sa
 - Graph gaps represent missing data or sleep; supported slower sampling does not create false gaps. Disabling the graph leaves history and statistics available.
 - OS thermal pressure reported independently of temperatures.
 - Serial utility queue, cached SMC metadata, no recurring shell commands, sampling paused during sleep, chart released while the popup is closed, settings view released when its window closes.
-- No telemetry, background network activity, or automatic sensor logging to disk. Preferences are saved only when changed.
+- No telemetry or automatic sensor logging to disk. The only network call is the optional AI explanation (Process Watch). Preferences are saved only when changed.
 
 ## Development and checks
 

@@ -18,7 +18,7 @@ struct SettingsView: View {
         self.monitor = monitor
         _tab = State(initialValue: section)
     }
-    private let tabs = ["Appearance", "Dashboard", "Efficiency", "Alerts"]
+    private let tabs = ["Appearance", "Dashboard", "Efficiency", "Alerts", "Processes"]
     func binding<Value>(_ key: WritableKeyPath<Preferences, Value>) -> Binding<Value> {
         Binding(get: { monitor.preferences[keyPath: key] }, set: { monitor.preferences[keyPath: key] = $0 })
     }
@@ -36,6 +36,7 @@ struct SettingsView: View {
                     case "Dashboard": dashboard
                     case "Efficiency": efficiency
                     case "Alerts": alerts
+                    case "Processes": ProcessSettings(watch: monitor.processes)
                     default: appearance
                     }
                     if let message = monitor.message { Text(message).foregroundStyle(.orange).font(.caption) }
@@ -44,7 +45,7 @@ struct SettingsView: View {
             Divider()
             Toggle("Launch at login", isOn: Binding(get: { monitor.loginEnabled }, set: monitor.setLogin))
         }
-        .padding(24).frame(width: 480, height: 530)
+        .padding(24).frame(width: 520, height: 560)
         .background(Color(nsColor: .windowBackgroundColor))
         .environment(\.colorScheme, monitor.preferences.appearance.scheme ?? systemScheme)
         .tint(monitor.preferences.tint.color)

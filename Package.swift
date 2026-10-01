@@ -5,7 +5,8 @@ let package = Package(
     products: [.executable(name: "TGProMax", targets: ["TGProMax"]), .executable(name: "SensorProbe", targets: ["SensorProbe"])],
     targets: [
         .target(name: "CSMC", linkerSettings: [.linkedFramework("IOKit"), .linkedFramework("CoreFoundation")]),
-        .target(name: "ThermalCore", dependencies: ["CSMC"]),
+        .target(name: "CProc"),
+        .target(name: "ThermalCore", dependencies: ["CSMC", "CProc"]),
         .executableTarget(name: "TGProMax", dependencies: ["ThermalCore"]),
         .executableTarget(name: "SensorProbe", dependencies: ["ThermalCore"]),
         .testTarget(name: "ThermalCoreTests", dependencies: ["ThermalCore", "CSMC"])

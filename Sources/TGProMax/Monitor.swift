@@ -86,6 +86,7 @@ final class Sampler {
     }
     let chip: String
     let sampler: Sampler
+    let processes: ProcessWatcher
     private var gate = AlertGate()
     private var observers: [NSObjectProtocol] = []
     var showSettings: (() -> Void)?
@@ -103,16 +104,17 @@ final class Sampler {
         sysctlbyname("machdep.cpu.brand_string", &bytes, &size, nil, 0)
         chip = String(cString: bytes)
         sampler = Sampler(isM5: chip.contains("M5"))
+        processes = ProcessWatcher(preview: preview)
         let center = NSWorkspace.shared.notificationCenter
         observers.append(center.addObserver(forName: NSWorkspace.willSleepNotification, object: nil, queue: .main) { [weak self] _ in
             Task { @MainActor in
                 guard let self else { return }
                 self.sleeping = true; self.gate.interrupt()
-                self.sampler.stop(); self.snapshot = nil; self.onReading?()
+                self.sampler.stop(); self.processes.stop(); self.snapshot = nil; self.onReading?()
             }
         })
         observers.append(center.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
-            Task { @MainActor in self?.sleeping = false; self?.refreshPower(); self?.start() }
+            Task { @MainActor in self?.sleeping = false; self?.refreshPower(); self?.start(); self?.processes.start() }
         })
         if let first = visibleComponents.first { selected = first }
         refreshPower()
@@ -129,11 +131,11 @@ final class Sampler {
               let source = IOPSGetProvidingPowerSourceType(info)?.takeUnretainedValue() else { return }
         let battery = source as String == kIOPSBatteryPowerValue
         if battery != onBattery {
-            onBattery = battery; gate.interrupt(); sampler.setInterval(effectiveInterval)
+            onBattery = battery; gate.interrupt(); sampler.setInterval(effectiveInterval); processes.onBattery = battery
         }
     }
     func stop() {
-        sampler.stop()
+        sampler.stop(); processes.stop()
         if let powerSource { CFRunLoopSourceInvalidate(powerSource) }
         powerSource = nil
         for observer in observers { NSWorkspace.shared.notificationCenter.removeObserver(observer) }

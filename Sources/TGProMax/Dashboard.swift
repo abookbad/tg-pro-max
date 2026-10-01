@@ -4,8 +4,10 @@ import ThermalCore
 
 struct Dashboard: View {
     @ObservedObject var monitor: Monitor
+    @ObservedObject var processes: ProcessWatcher
     @Environment(\.colorScheme) private var systemScheme
     @State private var details = false
+    init(monitor: Monitor) { self.monitor = monitor; self.processes = monitor.processes }
     private var accent: Color {
         monitor.preferences.tint == .mint && scheme == .light ? Color(red: 0.06, green: 0.47, blue: 0.34) : monitor.preferences.tint.color
     }
@@ -14,7 +16,7 @@ struct Dashboard: View {
     private var background: Color { scheme == .dark ? Color(red: 0.075, green: 0.085, blue: 0.095) : Color(nsColor: .windowBackgroundColor) }
     private var panelHeight: CGFloat {
         let rows = visibleRows.count
-        return CGFloat((monitor.preferences.compact ? 470 : 500) + rows * (monitor.preferences.compact ? 28 : 36) - (monitor.preferences.showGraph ? (monitor.preferences.overlay ? -24 : 0) : 135) + (details ? 190 : 0) + (monitor.message != nil ? 80 : 0))
+        return CGFloat((monitor.preferences.compact ? 470 : 500) + rows * (monitor.preferences.compact ? 28 : 36) - (monitor.preferences.showGraph ? (monitor.preferences.overlay ? -24 : 0) : 135) + (details ? 190 : 0) + (monitor.message != nil ? 80 : 0)) + ProcessSection.height(processes, compact: monitor.preferences.compact)
     }
     var body: some View {
         ScrollView { panel }
@@ -128,6 +130,7 @@ struct Dashboard: View {
                     }.frame(height: 120)
                 }
             }
+            ProcessSection(watch: processes, accent: accent, compact: monitor.preferences.compact)
             if let message = monitor.message {
                 HStack(alignment: .top) {
                     Text(message).font(.caption).foregroundStyle(.orange)

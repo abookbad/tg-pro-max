@@ -54,7 +54,7 @@ import UserNotifications
                 monitor.preferences.compact = true
                 monitor.preferences.unit = .fahrenheit
                 save(Dashboard(monitor: monitor), "dashboard-light")
-                for section in ["Appearance", "Dashboard", "Efficiency", "Alerts"] {
+                for section in ["Appearance", "Dashboard", "Efficiency", "Alerts", "Processes"] {
                     save(SettingsView(monitor: monitor, section: section), "settings-" + section.lowercased())
                 }
                 NSApplication.shared.terminate(nil)
@@ -94,7 +94,7 @@ import UserNotifications
     private func openSettings() {
         popover.performClose(nil)
         if settingsWindow == nil {
-            let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 480, height: 530), styleMask: [.titled, .closable], backing: .buffered, defer: false)
+            let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 520, height: 560), styleMask: [.titled, .closable], backing: .buffered, defer: false)
             window.title = "TG PRO MAX Settings"
             window.isReleasedWhenClosed = false
             window.delegate = self
@@ -116,6 +116,7 @@ import UserNotifications
         monitor.refreshLogin()
         popover.contentViewController = NSHostingController(rootView: Dashboard(monitor: monitor))
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        monitor.processes.refreshSoon()
         NSApplication.shared.activate(ignoringOtherApps: true)
     }
     func popoverDidClose(_ notification: Notification) {
