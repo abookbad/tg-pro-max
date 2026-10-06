@@ -27,7 +27,8 @@ public struct WatchSettings: Codable, Equatable, Sendable {
     public var runawayMinutes = 10.0
     public var notify = true
     public var ai = true                   // explain runaway alerts with OpenAI when a key is available
-    public var model = "gpt-5-mini"
+    public static let defaultModel = "gpt-6-luna"
+    public var model = WatchSettings.defaultModel
     public init() {}
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self), d = WatchSettings()
@@ -47,7 +48,8 @@ public struct WatchSettings: Codable, Equatable, Sendable {
         if ![0.0, 6, 12, 24, 48].contains(maxAgeHours) { maxAgeHours = 24 }
         runawayCPU = runawayCPU.isFinite ? min(400, max(30, runawayCPU)) : 80
         if ![2.0, 5, 10, 30].contains(runawayMinutes) { runawayMinutes = 10 }
-        if model.trimmingCharacters(in: .whitespaces).isEmpty { model = "gpt-5-mini" }
+        // Empty, or still on the old default (gpt-5-mini) → current default.
+        if model.trimmingCharacters(in: .whitespaces).isEmpty || model == "gpt-5-mini" { model = WatchSettings.defaultModel }
     }
 }
 

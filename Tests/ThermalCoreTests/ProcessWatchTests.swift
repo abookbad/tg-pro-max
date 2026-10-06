@@ -97,4 +97,11 @@ final class ProcessWatchTests: XCTestCase {
         XCTAssertEqual(decoded.maxAgeHours, 24, "invalid values fall back")
         XCTAssertEqual(decoded.runawayCPU, 80, "missing keys keep defaults")
     }
+
+    func testOldDefaultModelMovesToCurrentDefault() throws {
+        let old = try JSONDecoder().decode(WatchSettings.self, from: Data(#"{"model":"gpt-5-mini"}"#.utf8))
+        XCTAssertEqual(old.model, WatchSettings.defaultModel)
+        let custom = try JSONDecoder().decode(WatchSettings.self, from: Data(#"{"model":"gpt-6-sol"}"#.utf8))
+        XCTAssertEqual(custom.model, "gpt-6-sol", "a model you picked yourself is kept")
+    }
 }

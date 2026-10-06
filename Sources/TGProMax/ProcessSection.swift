@@ -109,7 +109,7 @@ struct ProcessSettings: View {
             Toggle("Explain runaway alerts with OpenAI", isOn: binding(\.ai))
             HStack {
                 Text("Model")
-                TextField("gpt-5-mini", text: binding(\.model)).textFieldStyle(.roundedBorder).frame(width: 160)
+                TextField(WatchSettings.defaultModel, text: binding(\.model)).textFieldStyle(.roundedBorder).frame(width: 160)
             }
             HStack {
                 SecureField("OpenAI API key (optional)", text: $key).textFieldStyle(.roundedBorder)
